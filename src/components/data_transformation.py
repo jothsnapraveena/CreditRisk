@@ -9,6 +9,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn import __version__ as sklearn_version
+from imblearn.over_sampling import RandomOverSampler
 
 from src.logger import logging
 from src.exception import CustomException
@@ -83,6 +84,26 @@ class DataTransformation:
         try:
             train_df = pd.read_csv(train_path)
             test_df = pd.read_csv(test_path)
+
+            # Convert 'Loan_Status' to categorical
+            train_df['Loan_Status'] = train_df['Loan_Status'].astype('category')
+            test_df['Loan_Status'] = test_df['Loan_Status'].astype('category')
+
+            # Convert categorical to numeric
+            train_df['Loan_Status'] = train_df['Loan_Status'].cat.codes
+            test_df['Loan_Status'] = test_df['Loan_Status'].cat.codes
+            
+            # Separate features and target
+            X_train = train_df.drop('Loan_Status', axis=1)
+            y_train = train_df['Loan_Status']
+
+            # Apply random oversampling
+            ros = RandomOverSampler(random_state=42)
+            X_train_resampled, y_train_resampled = ros.fit_resample(X_train, y_train)
+
+            # Combine resampled features and target
+            train_df = pd.concat([X_train_resampled, y_train_resampled], axis=1)
+                
 
             logging.info("Read train and test data completed")
             logging.info(f"Train Dataframe Head : \n{train_df.head().to_string()}")

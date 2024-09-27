@@ -10,6 +10,8 @@ from src.components.data_transformation import DataTransformationConfig
 
 from src.components.data_transformation import DataTransformation
 
+from src.components.model_trainer import ModelTrainer
+
 from dataclasses import dataclass
 
 @dataclass
@@ -25,6 +27,10 @@ class DataIngestion:
         logging.info("Entered the data ingestion method")
         try:
             df=pd.read_csv(r'D:\End To End ML\notebook\CreditRisk.csv')
+
+            # Ensure 'Loan_Status' is of category type
+            df['Loan_Status'] = df['Loan_Status'].astype(str)
+
             logging.info("Data ingestion Initiated")
 
             os.makedirs(os.path.dirname(self.ingestion_config.train_data_path),exist_ok=True)
@@ -48,8 +54,18 @@ class DataIngestion:
         
 
 if __name__=="__main__":
-    obj=DataIngestion()
-    train_data,test_data=obj.initiate_data_ingestion()
+    try:
+        obj=DataIngestion()
+        train_data,test_data=obj.initiate_data_ingestion()
+        print(f"Data ingestion completed. Train data: {train_data}, Test data: {test_data}")
 
-    data_tranformation=DataTransformation()
-    data_tranformation.initiate_data_transformation(train_data,test_data)
+        data_transformation=DataTransformation()
+        train_arr,test_arr,preprocessor_path=data_transformation.initiate_data_transformation(train_data,test_data)
+        print(f"Data transformation completed. Train array shape: {train_arr.shape}, Test array shape: {test_arr.shape}")
+
+        modeltrainer=ModelTrainer()
+        result = modeltrainer.initiate_model_trainer(train_arr,test_arr,preprocessor_path)
+        print(f"Model training completed. Result: {result}")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        logging.error(f"An error occurred: {str(e)}")
