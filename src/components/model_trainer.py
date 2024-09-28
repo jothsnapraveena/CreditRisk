@@ -59,8 +59,8 @@ class ModelTrainer:
                 "Random Forest": RandomForestClassifier(),
                 "Gradient Boosting": GradientBoostingClassifier(),
                 "XGBoost": XGBClassifier(),
-                "Support Vector Machine": SVC(),
-                "Naive Bayes": GaussianNB()
+                "Support Vector Machine": SVC()
+               
             }
 
             params = {
@@ -94,8 +94,7 @@ class ModelTrainer:
                 "Support Vector Machine": {
                     'C': [0.1, 1, 10],
                     'kernel': ['linear', 'rbf']
-                },
-                "Naive Bayes": {}  # No hyperparameters for GaussianNB
+                }
             }
 
 
@@ -117,12 +116,41 @@ class ModelTrainer:
 
             logging.info("Saving the best model")
 
+            # Fit the best model on the entire training data
+            best_model.fit(X_train, y_train)
+
+
             save_object(
                 file_path=self.model_trainer_config.trained_model_file_path,
                 obj=best_model
             )
 
-            return model_report
+            predicted=best_model.predict(X_test)
+
+            accuracy = accuracy_score(y_test, predicted)
+            precision = precision_score(y_test, predicted, average='weighted')
+            recall = recall_score(y_test, predicted, average='weighted')
+            f1 = f1_score(y_test, predicted, average='weighted')
+
+            logging.info(f"Best Model: {best_model_name}")
+            logging.info(f"Accuracy Score: {accuracy}")
+            logging.info(f"Precision Score: {precision}")
+            logging.info(f"Recall Score: {recall}")
+            logging.info(f"F1 Score: {f1}")
+
+            return {
+                "best_model_name": best_model_name,
+                "accuracy": accuracy,
+                "precision": precision,
+                "recall": recall,
+                "f1_score": f1
+            }
+
 
         except Exception as e:
             raise CustomException(e, sys)
+
+
+
+
+          
