@@ -53,6 +53,7 @@ class ModelTrainer:
             logging.info(f"Unique values in y_test: {np.unique(y_test)}")
 
             models={
+                "Logistic Regression":LogisticRegression(),
                 "K-Nearest Neighbors": KNeighborsClassifier(),
                 "Decision Tree": DecisionTreeClassifier(),
                 "Random Forest": RandomForestClassifier(),
@@ -62,16 +63,59 @@ class ModelTrainer:
                 "Naive Bayes": GaussianNB()
             }
 
-            model_report = evaluate_models(X_train, y_train, X_test, y_test, models)
+            params = {
+                "Logistic Regression": {
+                    'C': [0.1, 1, 10, 100],
+                    'solver': ['liblinear', 'saga']
+                },
+                "K-Nearest Neighbors": {
+                    'n_neighbors': [3, 5, 7, 9],
+                    'weights': ['uniform', 'distance']
+                },
+                "Decision Tree": {
+                    'criterion': ['gini', 'entropy'],
+                    'max_depth': [3, 5, 10, None]
+                },
+                "Random Forest": {
+                    'n_estimators': [50, 100, 200],
+                    'criterion': ['gini', 'entropy'],
+                    'max_depth': [3, 5, 10, None]
+                },
+                "Gradient Boosting": {
+                    'n_estimators': [50, 100, 200],
+                    'learning_rate': [0.01, 0.1, 0.05],
+                    'subsample': [0.6, 0.8, 1.0]
+                },
+                "XGBoost": {
+                    'n_estimators': [50, 100, 200],
+                    'learning_rate': [0.01, 0.1, 0.05],
+                    'max_depth': [3, 5, 7]
+                },
+                "Support Vector Machine": {
+                    'C': [0.1, 1, 10],
+                    'kernel': ['linear', 'rbf']
+                },
+                "Naive Bayes": {}  # No hyperparameters for GaussianNB
+            }
+
+
+            logging.info("Starting model training with hyperparameter tuning")
+
+            model_report = evaluate_models(X_train, y_train, X_test, y_test, models, params)
 
             # Find the best model based on test accuracy
-            best_model_score = max(model_report.values(), key=lambda x: x['test_accuracy'])['test_accuracy']
             best_model_name = max(model_report, key=lambda x: model_report[x]['test_accuracy'])
+            best_model_score = model_report[best_model_name]['test_accuracy']
 
             best_model = models[best_model_name]
 
-            logging.info(f"Best Model Found: {best_model_name}")
-            logging.info(f"Best Model Test Accuracy: {best_model_score}")
+            logging.info(f"Best Model: {best_model_name}")
+            logging.info(f"Test Accuracy of the best model: {best_model_score}")
+
+            if best_model_score < 0.6:
+                raise CustomException("No model found with accuracy above threshold")
+
+            logging.info("Saving the best model")
 
             save_object(
                 file_path=self.model_trainer_config.trained_model_file_path,
