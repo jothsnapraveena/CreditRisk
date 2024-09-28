@@ -1,5 +1,5 @@
-==> 2024-09-28 14:24:47 <==
-# cmd: C:\Users\joths\anaconda3\Scripts\conda-script.py create -p deploy python==3.8 -y
+==> 2024-09-28 16:15:42 <==
+# cmd: C:\Users\joths\anaconda3\Scripts\conda-script.py create -p learning python==3.8 -y
 # conda version: 23.9.0
 +conda-forge/noarch::pip-24.2-pyh8b19718_1
 +conda-forge/noarch::setuptools-75.1.0-pyhd8ed1ab_0
